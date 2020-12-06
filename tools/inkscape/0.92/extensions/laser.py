@@ -86,9 +86,11 @@ loft_lengths_tolerance = 0.0000001
 options = {}
 defaults = {
 'header': """
-G90
+G90 # Set absolute positioning
+G28 # Homing 
 """,
-'footer': """G1 X0 Y0
+'footer': """
+G1 X0 Y0 # Park head to invoke laser off
 
 """
 }
@@ -2453,14 +2455,14 @@ class laser_gcode(inkex.Effect):
         self.OptionParser.add_option("-d", "--directory",                       action="store", type="string",          dest="directory",                           default="",                             help="Output directory")
         self.OptionParser.add_option("-f", "--filename",                        action="store", type="string",          dest="file",                                default="output.gcode",                 help="File name")
         self.OptionParser.add_option("",   "--add-numeric-suffix-to-filename",  action="store", type="inkbool",         dest="add_numeric_suffix_to_filename",      default=False,                          help="Add numeric suffix to file name")
-        self.OptionParser.add_option("",   "--laser-command",                   action="store", type="string",          dest="laser_command",                       default="M03",                      help="Laser gcode command")
-        self.OptionParser.add_option("",   "--laser-off-command",               action="store", type="string",          dest="laser_off_command",                   default="M05",                         help="Laser gcode end command")
+        self.OptionParser.add_option("",   "--laser-command",                   action="store", type="string",          dest="laser_command",                       default="M03 I",                        help="Laser gcode command")
+        self.OptionParser.add_option("",   "--laser-off-command",               action="store", type="string",          dest="laser_off_command",                   default="M05 I",                        help="Laser gcode end command")
         self.OptionParser.add_option("",   "--laser-speed",                     action="store", type="int",             dest="laser_speed",                         default="750",                          help="Laser speed (mm/min)")
         self.OptionParser.add_option("",   "--travel-speed",                    action="store", type="string",          dest="travel_speed",                        default="3000",                         help="Travel speed (mm/min)")
         self.OptionParser.add_option("",   "--laser-power",                     action="store", type="int",             dest="laser_power",                         default="255",                          help="S# is 256 or 10000 for full power")
         self.OptionParser.add_option("",   "--passes",                          action="store", type="int",             dest="passes",                              default="1",                            help="Quantity of passes")
         self.OptionParser.add_option("",   "--pass-depth",                      action="store", type="string",          dest="pass_depth",                          default="1",                            help="Depth of laser cut")
-        self.OptionParser.add_option("",   "--power-delay",                     action="store", type="string",          dest="power_delay",                         default="0",                          help="Laser power-on delay (ms)")
+        self.OptionParser.add_option("",   "--power-delay",                     action="store", type="string",          dest="power_delay",                         default="0",                            help="Laser power-on delay (ms)")
         self.OptionParser.add_option("",   "--suppress-all-messages",           action="store", type="inkbool",         dest="suppress_all_messages",               default=True,                           help="Hide messages during g-code generation")
         self.OptionParser.add_option("",   "--create-log",                      action="store", type="inkbool",         dest="log_create_log",                      default=False,                          help="Create log files")
         self.OptionParser.add_option("",   "--log-filename",                    action="store", type="string",          dest="log_filename",                        default='',                             help="Create log files")
@@ -3200,8 +3202,12 @@ class laser_gcode(inkex.Effect):
             "id": "Laser Engraver",
             "penetration feed": self.options.laser_speed,
             "feed": self.options.laser_speed,
-            "gcode before path": ("G4 P0 \n" + self.options.laser_command + " S" + str(int(self.options.laser_power)) + "\nG4 P" + self.options.power_delay),
-            "gcode after path": ("G4 P0 \n" + self.options.laser_off_command + " S0" + "\n" + "G1 F" + self.options.travel_speed),
+            "gcode before path": (("" if "M03 I" == self.options.laser_command else "G4 P0 \n") + \
+                                  self.options.laser_command + " S{}".format(int(self.options.laser_power)) + \
+                                  ("" if "M03 I" == self.options.laser_command else "\nG4 P{}".format(self.options.power_delay))),
+            "gcode after path":  (("" if "M05 I" == self.options.laser_off_command else "G4 P0 \n") + \
+                                  self.options.laser_off_command + " S0" + \
+                                  "\nG1 F{}".format(self.options.travel_speed)),
         }
 
         self.get_info()

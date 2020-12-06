@@ -230,7 +230,7 @@
 
 #define HEATER_0_PIN               RAMPS_D10_PIN
 
-#if ENABLED(IS_RAMPS_EFB)                         // Hotend, Fan, Bed
+#if ENABLED(IS_RAMPS_EFB) && !defined(SPINDLE_LASER_ONLY) // Hotend, Fan, Bed
   #define HEATER_BED_PIN            RAMPS_D8_PIN
 #elif ENABLED(IS_RAMPS_EEF)                       // Hotend, Hotend, Fan
   #define HEATER_1_PIN              RAMPS_D9_PIN
@@ -292,7 +292,11 @@
 //
 #if HAS_CUTTER && !defined(SPINDLE_LASER_ENA_PIN)
   #if !NUM_SERVOS                                 // Use servo connector if possible
-    #define SPINDLE_LASER_ENA_PIN              4  // Pullup or pulldown!
+    #if defined(SPINDLE_LASER_ONLY)
+      #define SPINDLE_LASER_ENA_PIN            RAMPS_D8_PIN
+    #else
+      #define SPINDLE_LASER_ENA_PIN            4  // Pullup or pulldown!
+    #endif
     #define SPINDLE_LASER_PWM_PIN              6  // Hardware PWM
     #define SPINDLE_DIR_PIN                    5
   #elif HAS_FREE_AUX2_PINS

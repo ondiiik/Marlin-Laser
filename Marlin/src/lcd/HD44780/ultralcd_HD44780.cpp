@@ -40,6 +40,7 @@
 #include "../../module/printcounter.h"
 #include "../../module/planner.h"
 #include "../../module/motion.h"
+#include "../../feature/spindle_laser.h"
 
 #if DISABLED(LCD_PROGRESS_BAR) && BOTH(FILAMENT_LCD_DISPLAY, SDSUPPORT)
   #include "../../feature/filwidth.h"
@@ -164,6 +165,18 @@ void MarlinUI::set_custom_characters(const HD44780CharSet screen_charset/*=CHARS
   #endif // SHOW_BOOTSCREEN
 
   // CHARSET_INFO
+  #if defined(SPINDLE_LASER_ONLY)
+  const static PROGMEM byte bedTemp[8] = {
+    B00000,
+    B00000,
+    B00000,
+    B00000,
+    B11111,
+    B00000,
+    B00000,
+    B00000
+  };
+  #else
   const static PROGMEM byte bedTemp[8] = {
     B00000,
     B11111,
@@ -174,6 +187,7 @@ void MarlinUI::set_custom_characters(const HD44780CharSet screen_charset/*=CHARS
     B00000,
     B00000
   };
+  #endif
 
   const static PROGMEM byte degree[8] = {
     B01100,
@@ -186,6 +200,18 @@ void MarlinUI::set_custom_characters(const HD44780CharSet screen_charset/*=CHARS
     B00000
   };
 
+  #if defined(SPINDLE_LASER_ONLY)
+  const static PROGMEM byte thermometer[8] = {
+    B10001,
+    B01010,
+    B00000,
+    B01110,
+    B01110,
+    B00000,
+    B01010,
+    B10001
+  };
+  #else
   const static PROGMEM byte thermometer[8] = {
     B00100,
     B01010,
@@ -196,6 +222,7 @@ void MarlinUI::set_custom_characters(const HD44780CharSet screen_charset/*=CHARS
     B10001,
     B01110
   };
+  #endif
 
   const static PROGMEM byte uplevel[8] = {
     B00100,
@@ -552,6 +579,36 @@ FORCE_INLINE void _draw_heater_status(const heater_id_t heater_id, const char pr
   }
 }
 
+FORCE_INLINE void _draw_laser_status() {
+  lcd_put_wchar('[');
+  
+  int l = (int(cutter.menuPower) * 9 * 4) / 255;
+  
+  for (int i = 0; i < 9 * 4; i += 4) {
+    int p = max(min(l - i - 1, 2), -1);
+    if ((p < 0) || (!cutter.isReady)) {
+      lcd_put_wchar(' ');
+    } else {
+      lcd_put_wchar(LCD_STR_PROGRESS[p]);
+    }
+  }
+  
+  lcd_put_wchar(']');
+  
+  if (cutter.isReady) {
+//    lcd_put_u8str_P(PSTR(" " LCD_STR_BEDTEMP LCD_STR_BEDTEMP LCD_STR_THERMOMETER " "));
+    lcd_put_wchar(' ');
+    lcd_put_wchar(LCD_STR_BEDTEMP[0]);
+    lcd_put_wchar(LCD_STR_BEDTEMP[0]);
+    lcd_put_wchar(LCD_STR_THERMOMETER[0]);
+    lcd_put_wchar(' ');
+    lcd_put_int((unsigned(cutter.menuPower) * 100) / 255);
+    lcd_put_wchar('%');
+  } else {
+    lcd_put_u8str_P(PSTR("     0%"));
+  }
+}
+
 FORCE_INLINE void _draw_bed_status(const bool blink) {
   _draw_heater_status(H_BED, TERN0(HAS_LEVELING, blink && planner.leveling_active) ? '_' : LCD_STR_BEDTEMP[0], blink);
 }
@@ -738,7 +795,11 @@ void MarlinUI::draw_status_screen() {
       //
       // Hotend 0 Temperature
       //
+      #if defined(SPINDLE_LASER_ONLY)
+      _draw_laser_status();
+      #else
       _draw_heater_status(H_E0, LCD_STR_THERMOMETER[0], blink);
+      #endif
 
       //
       // Hotend 1 or Bed Temperature

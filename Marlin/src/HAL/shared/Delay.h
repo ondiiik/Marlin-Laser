@@ -128,11 +128,17 @@
       #define MAXNOPS 4
 
       if (x <= (MAXNOPS)) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
         switch (x) { case 4: nop(); case 3: nop(); case 2: nop(); case 1: nop(); }
+        #pragma GCC diagnostic pop
       }
       else {
         const uint32_t rem = (x) % (MAXNOPS);
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
         switch (rem) { case 3: nop(); case 2: nop(); case 1: nop(); }
+        #pragma GCC diagnostic pop
         if ((x = (x) / (MAXNOPS)))
           __delay_4cycles(x); // if need more then 4 nop loop is more optimal
       }

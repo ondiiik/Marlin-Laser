@@ -87,6 +87,7 @@ options = {}
 defaults = {
 'header': """
 G90
+G28
 """,
 'footer': """G1 X0 Y0
 M18
@@ -2415,7 +2416,7 @@ class laser_gcode(inkex.Effect):
         for x in range(1,self.options.passes):
             gcode += "G91\nG1 Z-" + self.options.pass_depth + "\nG90\n" + gcode_pass
         f = open(self.options.directory+self.options.file, "w")
-        f.write(self.options.laser_off_command + " S0" + "\n" + self.header + "G1 F" + self.options.travel_speed + "\nG28\n\n\n" + gcode + self.footer)
+        f.write(self.options.laser_off_command + " S0" + "\n" + self.header + "G1 F" + self.options.travel_speed + "\n" + gcode + self.footer)
         f.close()
 
     def __init__(self):
