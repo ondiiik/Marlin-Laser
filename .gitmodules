@@ -1,3 +1,9 @@
 [submodule "tools/bootloader"]
 	path = tools/bootloader
 	url = https://github.com/FleetProbe/MicroBridge-Arduino-ATMega2560.git
+[submodule "tools/laser2g"]
+	path = tools/inkscape_laser
+	url = https://github.com/dapperfu/inkscape_LaserGCode2.git
+[submodule "tools/laser_tool"]
+	path = tools/laser_tool
+	url = https://github.com/ondiiik/J-Tech-Photonics-Laser-Tool.git
