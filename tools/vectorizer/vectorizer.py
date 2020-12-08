@@ -4,11 +4,11 @@ Created on Nov 29, 2020
 @author: OSi
 '''
 from svgwrite import Drawing, rgb
-from PIL      import Image
+from PIL import Image
 
 
 class Vectorize:
-    def __init__(self, bitmap, size, width = 0.1, bits = 4, bw = False):
+    def __init__(self, bitmap, size, width = 0.1, bits = 4, bw = False, file = None):
         # Read image
         print('\tVectorizing file ...')
         print('\t\tOpening file ', bitmap)
@@ -18,14 +18,15 @@ class Vectorize:
         # Rescale to be matching to parameters
         factor = min(size[0] / bitmap.size[0] / width,
                      size[1] / bitmap.size[1] / width)
-        size   = (size,
+        size   = ((    bitmap.size[0] * factor * width,
+                       bitmap.size[1] * factor * width),
                   (int(bitmap.size[0] * factor),
                    int(bitmap.size[1] * factor)))
         
-        print('\t\tResizing to: {} x {} : {} ({} x {} mm - F {})'.format(*size[1], width,
-                                                                         int(size[1][0] * width),
-                                                                         int(size[1][1] * width),
-                                                                         factor))
+        print('\t\tResizing to: {} x {} : {} ({:.1f} x {:.1f} mm - F {})'.format(*size[1], width,
+                                                                                  size[0][0],
+                                                                                  size[0][1],
+                                                                                  factor))
         bitmap = bitmap.resize(size[1], Image.LANCZOS)
         bitmap = bitmap.convert('L')
         
@@ -59,13 +60,37 @@ class Vectorize:
             
             for x in env[0]:
                 c  = (bitmap.getpixel((x, y)) // reducto) * reducto
+                bitmap.putpixel((x, y), c)
                 xx = x * width
                 moves.append(((x, y), (xx, yy), c))
             
             moves.append(((env[1][1], y), (env[1][1] * width, yy), c))
         
-        self.moves = moves
-        bitmap.save('/tmp/test.png')
+        
+        # Optimize level 2 - merge vertical or horizontal moves
+        # with the same intensity
+        moves_opt = []
+        chunk     = []
+        
+        for move in moves:
+            chunk.append(move)
+            
+            if len(chunk) < 2:
+                continue
+            
+            if (not chunk[-1][0][0] == chunk[-2][0][0]  or
+                not chunk[-1][0][1] == chunk[-2][0][1]) and \
+                not chunk[-1][2]    == chunk[-2][2]:
+                    moves_opt.append(chunk[-2])
+                    chunk = [chunk[-1]]
+        
+        
+        
+        self.moves = moves_opt
+        
+        if file:
+            print('Writing PNG bitmap to ', file)
+            bitmap.save(file)
 
 
 
@@ -100,6 +125,7 @@ class GCode:
         self.final      = ['M05 I S0 # Power laser off',
                            'G0 X0 Y0 # Park head and invoke laser off']
         self.burn_speed = speed
+        self.size_y     = vectorized.size[0][1]
     
     
     def save(self):
@@ -112,29 +138,43 @@ class GCode:
             
             f.write('\n\n# Engraving code\n')
             
-            f.write('G1 X{:.3f} Y{:.3f} F3000 # Move to origin\n'.format(                             self.vectorized.moves[0][1][0],
-                                                                         self.vectorized.size[0][1] - self.vectorized.moves[0][1][1]))
-            f.write('G1 F{}                # Set burn speed\n\n'.format(self.burn_speed))
+            f.write('G1 X{:.3f} Y{:.3f} F3000 S0 # Move to origin\n'.format(*self._convert(self.vectorized.moves[0])[0]))
+            f.write('G1 F{}                   # Set burn speed\n\n'.format(self.burn_speed))
             
-            print(self.vectorized.size)
-            last = self.vectorized.moves[0]
+            last = self._convert(self.vectorized.moves[0])
+            
             for i in self.vectorized.moves:
-                f.write('G1 ')
+                current = self._convert(i)
+                delta   = ((last[0][0] - current[0][0],
+                            last[0][1] - current[0][1]),
+                            last[1]    - current[1])
                 
-                if not last[0][0] == i[0][0]:
-                    f.write(' X{:.3f}'.format(i[1][0]))
+                if 0 == delta[0][0] and 0 == delta[0][1] and 0 == delta[1]:
+                    continue
                 
-                if not last[0][1] == i[0][1]:
-                    f.write(' Y{:.3f}'.format(self.vectorized.size[0][1] - i[1][1]))
+                f.write('G1')
                 
-                f.write(' S{}\n'.format(255 - i[2]))
-                last = i
+                if not 0 == delta[0][0]:
+                    f.write(' X{:.3f}'.format(current[0][0]))
+                
+                if not 0 == delta[0][1]:
+                    f.write(' Y{:.3f}'.format(current[0][1]))
+                
+                if not 0 == delta[1]:
+                    f.write(' S{}'.format(current[1]))
+                
+                f.write('\n')
+                last = current
             
             
             f.write('\n# Finalize Marlin Laser code\n')
             
             for i in self.final:
                 f.write('{}\n'.format(i))
+    
+    
+    def _convert(self, s):
+        return (s[1][0], self.size_y - s[1][1]), 255 - s[2] 
 
 
 
@@ -144,16 +184,17 @@ if __name__ == '__main__':
     @click.command()
     @click.option('--input',  '-i', type    = click.Path(exists = True), required = True, help = 'Input bitmap to be vectorized')
     @click.option('--output', '-o', type    = click.Path(),              required = True, help = 'Output G-CODE image')
-    @click.option('--svg',    '-v', type    = click.Path(),              default = None,  help = 'Output vectorized SVG image')
+    @click.option('--png',    '-p', type    = click.Path(),              default  = None, help = 'Output final PNG image')
+    @click.option('--svg',    '-v', type    = click.Path(),              default  = None, help = 'Output vectorized SVG image')
     @click.option('--width',  '-w',                                      default  = 100,  help = 'Final image width in mm')
     @click.option('--height', '-h',                                      default  = 100,  help = 'Final image height in mm')
     @click.option('--dot',    '-d', type    = float,                     default  = 0.1,  help = 'Laser path width')
     @click.option('--speed',  '-s', type    = int,                       default  = 1000, help = 'Laser burn speed')
     @click.option('--bits',   '-t',                                      default  = 8,    help = 'Bit resolution of image')
     @click.option('--bw',     '-l', is_flag = True,                                       help = 'Rather use BW instead of grayscale')
-    def run(input, output, svg, width, height, dot, speed, bits, bw):
+    def run(input, output, png, svg, width, height, dot, speed, bits, bw):
         print('Vectorizing ', input)
-        vectorized = Vectorize(input, (width, height), dot, bits, bw)
+        vectorized = Vectorize(input, (width, height), dot, bits, bw, png)
         
         print('Writing G-CODE to ', output)
         gcode = GCode(output, vectorized, speed)
