@@ -116,6 +116,8 @@ class SvgImage(Drawing):
 
 class GCode:
     def __init__(self, file, vectorized, speed):
+        print('\tCreating G-CODE graphics ...')
+        print('\t\tBurn speed {} mm/min'.format(speed))
         self.file       = file
         self.vectorized = vectorized
         self.initial    = ['M05 S0   # Power laser off',
@@ -189,7 +191,7 @@ if __name__ == '__main__':
     @click.option('--width',  '-w',                                      default  = 100,  help = 'Final image width in mm')
     @click.option('--height', '-h',                                      default  = 100,  help = 'Final image height in mm')
     @click.option('--dot',    '-d', type    = float,                     default  = 0.1,  help = 'Laser path width')
-    @click.option('--speed',  '-s', type    = int,                       default  = 1000, help = 'Laser burn speed')
+    @click.option('--speed',  '-s', type    = int,                       default  = 700,  help = 'Laser burn speed')
     @click.option('--bits',   '-t',                                      default  = 8,    help = 'Bit resolution of image')
     @click.option('--bw',     '-l', is_flag = True,                                       help = 'Rather use BW instead of grayscale')
     def run(input, output, png, svg, width, height, dot, speed, bits, bw):

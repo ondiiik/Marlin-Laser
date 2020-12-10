@@ -31,7 +31,7 @@
 #include "spindle_laser.h"
 
 SpindleLaser cutter;
-uint8_t SpindleLaser::power;
+int16_t SpindleLaser::power;
 bool SpindleLaser::isReady;                                           // Ready to apply power setting from the UI to OCR
 cutter_power_t SpindleLaser::menuPower,                               // Power set via LCD menu in PWM, PERCENT, or RPM
                SpindleLaser::unitPower;                               // LCD status power in PWM, PERCENT, or RPM
@@ -79,7 +79,7 @@ void SpindleLaser::init() {
 //
 // Set cutter ON/OFF state (and PWM) to the given cutter power value
 //
-void SpindleLaser::apply_power(const uint8_t opwr) {
+void SpindleLaser::apply_power(const int16_t opwr) {
   static uint8_t last_power_applied = 0;
   if (opwr == last_power_applied) return;
   last_power_applied = opwr;

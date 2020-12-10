@@ -85,7 +85,7 @@ public:
   static const cutter_power_t mpower_max() { return cpwr_to_upwr(SPEED_POWER_MAX); }
 
   static bool isReady;                    // Ready to apply power setting from the UI to OCR
-  static uint8_t power;
+  static int16_t power;
 
   #if ENABLED(MARLIN_DEV_MODE)
     static cutter_frequency_t frequency;  // Set PWM frequency; range: 2K-50K
@@ -101,13 +101,13 @@ public:
   #endif
 
   // Modifying this function should update everywhere
-  static inline bool enabled(const cutter_power_t opwr) { return opwr > 0; }
+  static inline bool enabled(const cutter_power_t opwr) { return opwr > TERN(SPINDLE_LASER_POWER_OFF_BY_PWM, 0, -1); }
   static inline bool enabled() { return enabled(power); }
 
-  static void apply_power(const uint8_t inpow);
+  static void apply_power(const int16_t inpow);
 
   FORCE_INLINE static void refresh() { apply_power(power); }
-  FORCE_INLINE static void set_power(const uint8_t upwr) { power = upwr; refresh(); }
+  FORCE_INLINE static void set_power(const int16_t upwr) { power = upwr; refresh(); }
 
   #if ENABLED(SPINDLE_LASER_PWM)
 
@@ -174,7 +174,7 @@ public:
   #endif // SPINDLE_LASER_PWM
 
   static inline void set_enabled(const bool enable) {
-    set_power(enable ? TERN(SPINDLE_LASER_PWM, (power ?: (unitPower ? upower_to_ocr(cpwr_to_upwr(SPEED_POWER_STARTUP)) : 0)), 255) : 0);
+    set_power(enable ? TERN(SPINDLE_LASER_PWM, (power ? power : (unitPower ? upower_to_ocr(cpwr_to_upwr(SPEED_POWER_STARTUP)) : TERN(SPINDLE_LASER_POWER_OFF_BY_PWM, 0, -1))), 255) : 0);
   }
 
   // Wait for spindle to spin up or spin down
