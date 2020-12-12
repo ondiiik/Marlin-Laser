@@ -120,28 +120,28 @@ class GCode:
         print('\t\tBurn speed {} mm/min'.format(speed))
         self.file       = file
         self.vectorized = vectorized
-        self.initial    = ['M05 S0   # Power laser off',
-                           'G90      # Set absolute positioning',
-                           'G28      # Homing' ,
-                           'G21      # Set millimeters']
-        self.final      = ['M05 I S0 # Power laser off',
-                           'G0 X0 Y0 # Park head and invoke laser off']
+        self.initial    = ['M05 S0   ; Power laser off',
+                           'G90      ; Set absolute positioning',
+                           'G28      ; Homing' ,
+                           'G21      ; Set millimeters']
+        self.final      = ['M05 I S0 ; Power laser off',
+                           'G0 X0 Y0 ; Park head and invoke laser off']
         self.burn_speed = speed
         self.size_y     = vectorized.size[0][1]
     
     
     def save(self):
         with open(self.file, 'w') as f:
-            f.write('# Init Marlin Laser code\n')
+            f.write('; Init Marlin Laser code\n')
             
             for i in self.initial:
                 f.write('{}\n'.format(i))
             
             
-            f.write('\n\n# Engraving code\n')
+            f.write('\n\n; Engraving code\n')
             
-            f.write('G1 X{:.3f} Y{:.3f} F3000 S0 # Move to origin\n'.format(*self._convert(self.vectorized.moves[0])[0]))
-            f.write('G1 F{}                   # Set burn speed\n\n'.format(self.burn_speed))
+            f.write('G1 X{:.3f} Y{:.3f} F3000 S0 ; Move to origin\n'.format(*self._convert(self.vectorized.moves[0])[0]))
+            f.write('G1 F{}                   ; Set burn speed\n\n'.format(self.burn_speed))
             
             last = self._convert(self.vectorized.moves[0])
             
@@ -169,7 +169,7 @@ class GCode:
                 last = current
             
             
-            f.write('\n# Finalize Marlin Laser code\n')
+            f.write('\n; Finalize Marlin Laser code\n')
             
             for i in self.final:
                 f.write('{}\n'.format(i))
