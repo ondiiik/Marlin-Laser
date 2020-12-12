@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 '''
 Created on Nov 29, 2020
 
@@ -47,24 +48,21 @@ class GCode:
         for cmd in self.gcode:
             g = cmd[0]
             
-            try:
+            if 'G' in g:
                 v = g['G']
                 
                 # Laser burns when extruder runs
-                try:
+                if 'E' in g:
                     del g['E']
-                    g['S'] = 255
-                except KeyError:
+                    if 'X' in g or 'Y' in g:
+                        g['S'] = 255
+                    else:
+                        g['S'] = 0
+                else:
                     g['S'] = 0
-                
-            except KeyError:
-                pass
             
-            try:
-                # No Z movement
+            if 'Z' in g:
                 del g['Z']
-            except KeyError:
-                pass
     
     
     def save(self, output = None):
@@ -142,11 +140,6 @@ class GCode:
 
 
 if __name__ == '__main__':
-    import click
-    
-    @click.command()
-    @click.option('--input',  '-i', type    = click.Path(exists = True), required = True, help = 'Input prusa slicer G-CODE')
-    @click.option('--output', '-o', type    = click.Path(),              required = True, help = 'Output laser G-CODE')
     def run(input, output):
         print('Converting ', input)
         gcode = GCode(input)
@@ -158,4 +151,5 @@ if __name__ == '__main__':
         print('Done ...')
     
     
-    run()
+    import sys
+    run(sys.argv[1], sys.argv[1])
