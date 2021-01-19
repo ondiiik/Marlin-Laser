@@ -1114,8 +1114,10 @@ bool homing_needed_error(uint8_t axis_bits/*=0x07*/) {
     char msg[strlen_P(home_first)+1];
     sprintf_P(msg, home_first,
       TEST(axis_bits, X_AXIS) ? "X" : "",
-      TEST(axis_bits, Y_AXIS) ? "Y" : "",
-      TEST(axis_bits, Z_AXIS) ? "Z" : ""
+      TEST(axis_bits, Y_AXIS) ? "Y" : ""
+      #if PIN_EXISTS(Z_STEP_PIN)
+      ,TEST(axis_bits, Z_AXIS) ? "Z" : ""
+      #endif
     );
     SERIAL_ECHO_START();
     SERIAL_ECHOLN(msg);

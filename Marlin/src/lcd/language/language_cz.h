@@ -41,7 +41,11 @@ namespace Language_cz {
   constexpr uint8_t    CHARSIZE                            = 2;
   PROGMEM Language_Str LANGUAGE                            = _UxGT("Czech");
 
+  #if ENABLED(SPINDLE_LASER_ONLY)
+  PROGMEM Language_Str WELCOME_MSG                         = MACHINE_NAME _UxGT(" připravena.");
+  #else
   PROGMEM Language_Str WELCOME_MSG                         = MACHINE_NAME _UxGT(" připraven.");
+  #endif
   PROGMEM Language_Str MSG_YES                             = _UxGT("ANO");
   PROGMEM Language_Str MSG_NO                              = _UxGT("NE");
   PROGMEM Language_Str MSG_BACK                            = _UxGT("Zpět");
@@ -65,10 +69,10 @@ namespace Language_cz {
   #else
     PROGMEM Language_Str MSG_PROGRESS_BAR_TEST             = _UxGT("Test uk. průběhu");
   #endif
-  PROGMEM Language_Str MSG_AUTO_HOME                       = _UxGT("Domovská pozice");
-  PROGMEM Language_Str MSG_AUTO_HOME_X                     = _UxGT("Domů osa X");
-  PROGMEM Language_Str MSG_AUTO_HOME_Y                     = _UxGT("Domů osa Y");
-  PROGMEM Language_Str MSG_AUTO_HOME_Z                     = _UxGT("Domů osa Z");
+  PROGMEM Language_Str MSG_AUTO_HOME                       = _UxGT("Zaparkovat hlavu");
+  PROGMEM Language_Str MSG_AUTO_HOME_X                     = _UxGT("Zaparovat osu X");
+  PROGMEM Language_Str MSG_AUTO_HOME_Y                     = _UxGT("Zaparovat osu Y");
+  PROGMEM Language_Str MSG_AUTO_HOME_Z                     = _UxGT("Zaparovat osu Z");
   PROGMEM Language_Str MSG_AUTO_Z_ALIGN                    = _UxGT("Auto srovnání Z");
   PROGMEM Language_Str MSG_LEVEL_BED_HOMING                = _UxGT("Měření podložky");
   PROGMEM Language_Str MSG_LEVEL_BED_WAITING               = _UxGT("Kliknutím spusťte");
@@ -314,35 +318,65 @@ namespace Language_cz {
   PROGMEM Language_Str MSG_RESTORE_DEFAULTS                = _UxGT("Obnovit výchozí");
   PROGMEM Language_Str MSG_INIT_EEPROM                     = _UxGT("Inic. EEPROM");
   PROGMEM Language_Str MSG_MEDIA_UPDATE                    = _UxGT("Aktualizace z SD");
+  #if ENABLED(SPINDLE_LASER_ONLY)
+  PROGMEM Language_Str MSG_RESET_PRINTER                   = _UxGT("Reset vypalovačky");
+  #else
   PROGMEM Language_Str MSG_RESET_PRINTER                   = _UxGT("Reset tiskárny");
+  #endif
   PROGMEM Language_Str MSG_REFRESH                         = LCD_STR_REFRESH _UxGT("Obnovit");
   PROGMEM Language_Str MSG_INFO_SCREEN                     = _UxGT("Info obrazovka");
+  #if ENABLED(SPINDLE_LASER_ONLY)
+  PROGMEM Language_Str MSG_PREPARE                         = _UxGT("Připrava vypalování");
+  PROGMEM Language_Str MSG_TUNE                            = _UxGT("Doladění vypalování");
+  PROGMEM Language_Str MSG_START_PRINT                     = _UxGT("Spustit vypalování");
+  #else
   PROGMEM Language_Str MSG_PREPARE                         = _UxGT("Připrava tisku");
   PROGMEM Language_Str MSG_TUNE                            = _UxGT("Doladění tisku");
   PROGMEM Language_Str MSG_START_PRINT                     = _UxGT("Spustit tisk");
+  #endif
   PROGMEM Language_Str MSG_BUTTON_NEXT                     = _UxGT("Další");
   PROGMEM Language_Str MSG_BUTTON_INIT                     = _UxGT("Inicializace");
   PROGMEM Language_Str MSG_BUTTON_STOP                     = _UxGT("Stop");
+  #if ENABLED(SPINDLE_LASER_ONLY)
+  PROGMEM Language_Str MSG_BUTTON_PRINT                    = _UxGT("Vypálit");
+  #else
   PROGMEM Language_Str MSG_BUTTON_PRINT                    = _UxGT("Tisk");
+  #endif
   PROGMEM Language_Str MSG_BUTTON_RESET                    = _UxGT("Reset");
   PROGMEM Language_Str MSG_BUTTON_CANCEL                   = _UxGT("Zrušit");
   PROGMEM Language_Str MSG_BUTTON_DONE                     = _UxGT("Hotovo");
   PROGMEM Language_Str MSG_BUTTON_BACK                     = _UxGT("Zpět");
   PROGMEM Language_Str MSG_BUTTON_PROCEED                  = _UxGT("Pokračovat");
+  #if ENABLED(SPINDLE_LASER_ONLY)
+  PROGMEM Language_Str MSG_PAUSE_PRINT                     = _UxGT("Pozastavit vypalování");
+  PROGMEM Language_Str MSG_RESUME_PRINT                    = _UxGT("Obnovit vypalování");
+  PROGMEM Language_Str MSG_STOP_PRINT                      = _UxGT("Zastavit vypalování");
+  PROGMEM Language_Str MSG_PRINTING_OBJECT                 = _UxGT("Vypálit objekt");
+  #else
   PROGMEM Language_Str MSG_PAUSE_PRINT                     = _UxGT("Pozastavit tisk");
   PROGMEM Language_Str MSG_RESUME_PRINT                    = _UxGT("Obnovit tisk");
   PROGMEM Language_Str MSG_STOP_PRINT                      = _UxGT("Zastavit tisk");
   PROGMEM Language_Str MSG_PRINTING_OBJECT                 = _UxGT("Tisk objektu");
+  #endif
   PROGMEM Language_Str MSG_CANCEL_OBJECT                   = _UxGT("Zrušit objekt");
   PROGMEM Language_Str MSG_CANCEL_OBJECT_N                 = _UxGT("Zrušit objekt =");
   PROGMEM Language_Str MSG_OUTAGE_RECOVERY                 = _UxGT("Obnova výpadku");
+  #if ENABLED(SPINDLE_LASER_ONLY)
+  PROGMEM Language_Str MSG_MEDIA_MENU                      = _UxGT("Vypálit z SD");
+  #else
   PROGMEM Language_Str MSG_MEDIA_MENU                      = _UxGT("Tisknout z SD");
+  #endif
   PROGMEM Language_Str MSG_NO_MEDIA                        = _UxGT("Žádná SD karta");
   PROGMEM Language_Str MSG_DWELL                           = _UxGT("Uspáno...");
   PROGMEM Language_Str MSG_USERWAIT                        = _UxGT("Čekání na uživ...");
   PROGMEM Language_Str MSG_PRINT_PAUSED                    = _UxGT("Tisk pozastaven");
+  #if ENABLED(SPINDLE_LASER_ONLY)
+  PROGMEM Language_Str MSG_PRINTING                        = _UxGT("Vypaluji...");
+  PROGMEM Language_Str MSG_PRINT_ABORTED                   = _UxGT("Vypalování zrušeno");
+  #else
   PROGMEM Language_Str MSG_PRINTING                        = _UxGT("Tisknu...");
   PROGMEM Language_Str MSG_PRINT_ABORTED                   = _UxGT("Tisk zrušen");
+  #endif
   PROGMEM Language_Str MSG_NO_MOVE                         = _UxGT("Žádný pohyb.");
   PROGMEM Language_Str MSG_KILLED                          = _UxGT("PŘERUSENO. ");
   PROGMEM Language_Str MSG_STOPPED                         = _UxGT("ZASTAVENO. ");
@@ -370,9 +404,9 @@ namespace Language_cz {
   PROGMEM Language_Str MSG_FILAMENTUNLOAD_E                = _UxGT("Vysunout filament *");
   PROGMEM Language_Str MSG_FILAMENTUNLOAD_ALL              = _UxGT("Vysunout vše");
 
-  PROGMEM Language_Str MSG_ATTACH_MEDIA                    = _UxGT("Načíst médium");
-  PROGMEM Language_Str MSG_CHANGE_MEDIA                    = _UxGT("Vyměnit médium");
-  PROGMEM Language_Str MSG_RELEASE_MEDIA                   = _UxGT("Vysunout médium");
+  PROGMEM Language_Str MSG_ATTACH_MEDIA                    = _UxGT("Načíst SD");
+  PROGMEM Language_Str MSG_CHANGE_MEDIA                    = _UxGT("Vyměnit SD");
+  PROGMEM Language_Str MSG_RELEASE_MEDIA                   = _UxGT("Vysunout SD");
   PROGMEM Language_Str MSG_ZPROBE_OUT                      = _UxGT("Sonda Z mimo podl");
   PROGMEM Language_Str MSG_SKEW_FACTOR                     = _UxGT("Faktor zkosení");
   PROGMEM Language_Str MSG_BLTOUCH                         = _UxGT("BLTouch");
@@ -395,7 +429,11 @@ namespace Language_cz {
   PROGMEM Language_Str MSG_MANUAL_DEPLOY_TOUCHMI           = _UxGT("vysunout TouchMI");
   PROGMEM Language_Str MSG_MANUAL_DEPLOY                   = _UxGT("Vysunout Z-sondu");
   PROGMEM Language_Str MSG_MANUAL_STOW                     = _UxGT("Zasunout Z-sondu");
-  PROGMEM Language_Str MSG_HOME_FIRST                      = _UxGT("Domů %s%s%s první");
+  #if PIN_EXISTS(Z_STEP_PIN)
+  PROGMEM Language_Str MSG_HOME_FIRST                      = _UxGT("Zaparkovat %s%s%s první");
+  #else
+  PROGMEM Language_Str MSG_HOME_FIRST                      = _UxGT("Zaparkovat %s%s první");
+  #endif
   PROGMEM Language_Str MSG_ZPROBE_ZOFFSET                  = _UxGT("Z ofset");
   PROGMEM Language_Str MSG_BABYSTEP_X                      = _UxGT("Babystep X");
   PROGMEM Language_Str MSG_BABYSTEP_Y                      = _UxGT("Babystep Y");
@@ -409,7 +447,11 @@ namespace Language_cz {
   PROGMEM Language_Str MSG_THERMAL_RUNAWAY_CHAMBER         = _UxGT("TEPL. ÚNIK KOMORA");
   PROGMEM Language_Str MSG_ERR_MAXTEMP                     = _UxGT("VYSOKÁ TEPLOTA");
   PROGMEM Language_Str MSG_ERR_MINTEMP                     = _UxGT("NÍZKA TEPLOTA");
+  #if ENABLED(SPINDLE_LASER_ONLY)
+  PROGMEM Language_Str MSG_HALTED                          = _UxGT("LASER ZASTAVEN");
+  #else
   PROGMEM Language_Str MSG_HALTED                          = _UxGT("TISK. ZASTAVENA");
+  #endif
   PROGMEM Language_Str MSG_PLEASE_RESET                    = _UxGT("Proveďte reset");
   PROGMEM Language_Str MSG_SHORT_DAY                       = _UxGT("d");
   PROGMEM Language_Str MSG_SHORT_HOUR                      = _UxGT("h");
@@ -434,13 +476,17 @@ namespace Language_cz {
   PROGMEM Language_Str MSG_DELTA_CALIBRATE_Z               = _UxGT("Kalibrovat Z");
   PROGMEM Language_Str MSG_DELTA_CALIBRATE_CENTER          = _UxGT("Kalibrovat Střed");
   PROGMEM Language_Str MSG_DELTA_SETTINGS                  = _UxGT("Delta nastavení");
-  PROGMEM Language_Str MSG_DELTA_AUTO_CALIBRATE            = _UxGT("Autokalibrace");
+  
   PROGMEM Language_Str MSG_DELTA_HEIGHT_CALIBRATE          = _UxGT("Nast.výšku delty");
   PROGMEM Language_Str MSG_DELTA_Z_OFFSET_CALIBRATE        = _UxGT("Nast. Z-ofset");
   PROGMEM Language_Str MSG_DELTA_DIAG_ROD                  = _UxGT("Diag rameno");
   PROGMEM Language_Str MSG_DELTA_HEIGHT                    = _UxGT("Výška");
   PROGMEM Language_Str MSG_DELTA_RADIUS                    = _UxGT("Poloměr");
+  #if ENABLED(SPINDLE_LASER_ONLY)
+  PROGMEM Language_Str MSG_INFO_MENU                       = _UxGT("O vypalovačce");
+  #else
   PROGMEM Language_Str MSG_INFO_MENU                       = _UxGT("O tiskárně");
+  #endif
   PROGMEM Language_Str MSG_INFO_PRINTER_MENU               = _UxGT("Info o tiskárně");
   PROGMEM Language_Str MSG_3POINT_LEVELING                 = _UxGT("3-bodové rovnání");
   PROGMEM Language_Str MSG_LINEAR_LEVELING                 = _UxGT("Lineárni rovnání");
@@ -458,13 +504,21 @@ namespace Language_cz {
 
   PROGMEM Language_Str MSG_CASE_LIGHT                      = _UxGT("Osvětlení");
   PROGMEM Language_Str MSG_CASE_LIGHT_BRIGHTNESS           = _UxGT("Jas světla");
+  #if ENABLED(SPINDLE_LASER_ONLY)
+  PROGMEM Language_Str MSG_KILL_EXPECTED_PRINTER           = _UxGT("NESPRÁVNÉ CNC");
+  #else
   PROGMEM Language_Str MSG_KILL_EXPECTED_PRINTER           = _UxGT("NESPRÁVNÁ TISKÁRNA");
+  #endif
 
   #if LCD_WIDTH >= 20
+    #if ENABLED(SPINDLE_LASER_ONLY)
+    PROGMEM Language_Str MSG_INFO_PRINT_COUNT              = _UxGT("Počet vypalování");
+    #else
     PROGMEM Language_Str MSG_INFO_PRINT_COUNT              = _UxGT("Počet tisků");
+    #endif
     PROGMEM Language_Str MSG_INFO_COMPLETED_PRINTS         = _UxGT("Dokončeno");
     PROGMEM Language_Str MSG_INFO_PRINT_TIME               = _UxGT("Celkový čas");
-    PROGMEM Language_Str MSG_INFO_PRINT_LONGEST            = _UxGT("Nejdelší tisk");
+    PROGMEM Language_Str MSG_INFO_PRINT_LONGEST            = _UxGT("Nejdelší úloha");
     PROGMEM Language_Str MSG_INFO_PRINT_FILAMENT           = _UxGT("Celkem vytlačeno");
   #else
     PROGMEM Language_Str MSG_INFO_PRINT_COUNT              = _UxGT("Tisky");
@@ -485,7 +539,11 @@ namespace Language_cz {
   PROGMEM Language_Str MSG_DAC_EEPROM_WRITE                = _UxGT("DAC uložit EEPROM");
   PROGMEM Language_Str MSG_ERROR_TMC                       = _UxGT("TMC CHYBA SPOJENÍ");
   PROGMEM Language_Str MSG_FILAMENT_CHANGE_HEADER          = _UxGT("VÝMĚNA FILAMENTU");
+  #if ENABLED(SPINDLE_LASER_ONLY)
+  PROGMEM Language_Str MSG_FILAMENT_CHANGE_HEADER_PAUSE    = _UxGT("VYPALOVÁNÍ POZASTAVENO");
+  #else
   PROGMEM Language_Str MSG_FILAMENT_CHANGE_HEADER_PAUSE    = _UxGT("TISK POZASTAVEN");
+  #endif
   PROGMEM Language_Str MSG_FILAMENT_CHANGE_HEADER_LOAD     = _UxGT("ZAVEDENÍ FILAMENTU");
   PROGMEM Language_Str MSG_FILAMENT_CHANGE_HEADER_UNLOAD   = _UxGT("VYSUNUTÍ FILAMENTU");
   PROGMEM Language_Str MSG_FILAMENT_CHANGE_OPTION_HEADER   = _UxGT("MOŽNOSTI OBNOVENÍ:");
@@ -555,7 +613,11 @@ namespace Language_cz {
 
   #if LCD_HEIGHT >= 4
     // Up to 3 lines allowed
+    #if ENABLED(SPINDLE_LASER_ONLY)
+    PROGMEM Language_Str MSG_ADVANCED_PAUSE_WAITING        = _UxGT(MSG_2_LINE("Stikněte tlačítko", "pro obnovení vypalování"));
+    #else
     PROGMEM Language_Str MSG_ADVANCED_PAUSE_WAITING        = _UxGT(MSG_2_LINE("Stikněte tlačítko", "pro obnovení tisku"));
+    #endif
     PROGMEM Language_Str MSG_PAUSE_PRINT_PARKING           = _UxGT(MSG_1_LINE("Parkování..."));
     PROGMEM Language_Str MSG_FILAMENT_CHANGE_INIT          = _UxGT(MSG_3_LINE("Čekejte prosím", "na zahájení", "výměny filamentu"));
     PROGMEM Language_Str MSG_FILAMENT_CHANGE_INSERT        = _UxGT(MSG_3_LINE("Vložte filament", "a stiskněte", "tlačítko..."));
@@ -565,7 +627,11 @@ namespace Language_cz {
     PROGMEM Language_Str MSG_FILAMENT_CHANGE_LOAD          = _UxGT(MSG_3_LINE("Čekejte prosím", "na zavedení", "filamentu"));
     PROGMEM Language_Str MSG_FILAMENT_CHANGE_PURGE         = _UxGT(MSG_2_LINE("Vyčkejte na", "vytlačení"));
     PROGMEM Language_Str MSG_FILAMENT_CHANGE_CONT_PURGE    = _UxGT(MSG_3_LINE("Klikněte pro", "ukončení", "vytlačování"));
+    #if ENABLED(SPINDLE_LASER_ONLY)
+    PROGMEM Language_Str MSG_FILAMENT_CHANGE_RESUME        = _UxGT(MSG_3_LINE("Čekejte prosím", "na pokračování", "vypalování"));
+    #else
     PROGMEM Language_Str MSG_FILAMENT_CHANGE_RESUME        = _UxGT(MSG_3_LINE("Čekejte prosím", "na pokračování", "tisku"));
+    #endif
   #else // LCD_HEIGHT < 4
     // Up to 2 lines allowed
     PROGMEM Language_Str MSG_ADVANCED_PAUSE_WAITING        = _UxGT(MSG_2_LINE("Stikněte tlač.", "pro obnovení"));

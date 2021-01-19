@@ -41,13 +41,21 @@
   #include "../../feature/powerloss.h"
 #endif
 
+#if HAS_CUTTER
+#include "../../feature/spindle_laser.h"
+#endif
+
 #include "../../MarlinCore.h" // for startOrResumeJob
 
 /**
  * M24: Start or Resume SD Print
  */
 void GcodeSuite::M24() {
-
+  
+  #if HAS_CUTTER
+  cutter.ocr_enable();
+  #endif
+  
   #if ENABLED(POWER_LOSS_RECOVERY)
     if (parser.seenval('S')) card.setIndex(parser.value_long());
     if (parser.seenval('T')) print_job_timer.resume(parser.value_long());
@@ -80,6 +88,10 @@ void GcodeSuite::M24() {
  * M25: Pause SD Print
  */
 void GcodeSuite::M25() {
+    
+  #if HAS_CUTTER
+  cutter.ocr_disable();
+  #endif
 
   #if ENABLED(PARK_HEAD_ON_PAUSE)
 

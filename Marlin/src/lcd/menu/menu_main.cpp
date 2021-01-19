@@ -160,7 +160,9 @@ void menu_main() {
     #endif // !HAS_ENCODER_WHEEL && SDSUPPORT
 
     if (TERN0(MACHINE_CAN_PAUSE, printingIsPaused()))
+    {
       ACTION_ITEM(MSG_RESUME_PRINT, ui.resume_print);
+    }
 
     #if ENABLED(HOST_START_MENU_ITEM) && defined(ACTION_ON_START)
       ACTION_ITEM(MSG_HOST_START_PRINT, host_action_start);
@@ -169,9 +171,17 @@ void menu_main() {
     SUBMENU(MSG_MOTION, menu_motion);
   }
 
-  #if HAS_CUTTER
-    SUBMENU(MSG_CUTTER(MENU), menu_spindle_laser);
+#if HAS_CUTTER
+  SUBMENU(MSG_CUTTER(MENU), menu_spindle_laser);
+#endif
+
+#if ENABLED(CUSTOM_USER_MENUS)
+  #ifdef CUSTOM_USER_MENU_TITLE
+    SUBMENU_P(PSTR(CUSTOM_USER_MENU_TITLE), menu_user);
+  #else
+    SUBMENU(MSG_USER_MENU, menu_user);
   #endif
+#endif
 
   #if HAS_TEMPERATURE
     SUBMENU(MSG_TEMPERATURE, menu_temperature);
@@ -190,14 +200,6 @@ void menu_main() {
   #endif
 
   SUBMENU(MSG_CONFIGURATION, menu_configuration);
-
-  #if ENABLED(CUSTOM_USER_MENUS)
-    #ifdef CUSTOM_USER_MENU_TITLE
-      SUBMENU_P(PSTR(CUSTOM_USER_MENU_TITLE), menu_user);
-    #else
-      SUBMENU(MSG_USER_MENU, menu_user);
-    #endif
-  #endif
 
   #if ENABLED(ADVANCED_PAUSE_FEATURE)
     #if E_STEPPERS == 1 && DISABLED(FILAMENT_LOAD_UNLOAD_GCODES)

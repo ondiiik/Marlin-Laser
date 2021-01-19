@@ -363,7 +363,9 @@ void menu_backlash();
     #define EDIT_VMAX(N) EDIT_ITEM_FAST(float3, MSG_VMAX_##N, &planner.settings.max_feedrate_mm_s[_AXIS(N)], 1, max_fr_edit_scaled[_AXIS(N)])
     EDIT_VMAX(A);
     EDIT_VMAX(B);
+    #if PIN_EXISTS(Z_STEP_PIN)
     EDIT_VMAX(C);
+    #endif
 
     #if E_STEPPERS
       EDIT_ITEM_FAST(float3, MSG_VMAX_E, &planner.settings.max_feedrate_mm_s[E_AXIS_N(active_extruder)], 1, max_fr_edit_scaled.e);
@@ -417,7 +419,9 @@ void menu_backlash();
     #define EDIT_AMAX(Q,L) EDIT_ITEM_FAST(long5_25, MSG_AMAX_##Q, &planner.settings.max_acceleration_mm_per_s2[_AXIS(Q)], L, max_accel_edit_scaled[_AXIS(Q)], []{ planner.reset_acceleration_rates(); })
     EDIT_AMAX(A, 100);
     EDIT_AMAX(B, 100);
+    #if PIN_EXISTS(Z_STEP_PIN)
     EDIT_AMAX(C,  10);
+    #endif
 
     #if ENABLED(DISTINCT_E_FACTORS)
       EDIT_ITEM_FAST(long5_25, MSG_AMAX_E, &planner.settings.max_acceleration_mm_per_s2[E_AXIS_N(active_extruder)], 100, max_accel_edit_scaled.e, []{ planner.reset_acceleration_rates(); });
@@ -505,7 +509,9 @@ void menu_advanced_steps_per_mm() {
   #define EDIT_QSTEPS(Q) EDIT_ITEM_FAST(float51, MSG_##Q##_STEPS, &planner.settings.axis_steps_per_mm[_AXIS(Q)], 5, 9999, []{ planner.refresh_positioning(); })
   EDIT_QSTEPS(A);
   EDIT_QSTEPS(B);
+  #if PIN_EXISTS(Z_STEP_PIN)
   EDIT_QSTEPS(C);
+  #endif
 
   #if ENABLED(DISTINCT_E_FACTORS)
     LOOP_L_N(n, E_STEPPERS)

@@ -60,20 +60,32 @@ void SpindleLaser::init() {
 }
 
 #if ENABLED(SPINDLE_LASER_PWM)
+  namespace {
+    bool ocr_enabled { true };
+  }
+  
   /**
    * Set the cutter PWM directly to the given ocr value
    */
   void SpindleLaser::set_ocr(const uint8_t ocr) {
-    WRITE(SPINDLE_LASER_ENA_PIN, SPINDLE_LASER_ACTIVE_STATE);         // Turn spindle on
+    WRITE(SPINDLE_LASER_ENA_PIN, ocr_enabled ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE); // Turn spindle on
     analogWrite(pin_t(SPINDLE_LASER_PWM_PIN), ocr ^ SPINDLE_LASER_PWM_OFF);
     #if NEEDS_HARDWARE_PWM && SPINDLE_LASER_FREQUENCY
       set_pwm_duty(pin_t(SPINDLE_LASER_PWM_PIN), ocr ^ SPINDLE_LASER_PWM_OFF);
     #endif
   }
   void SpindleLaser::ocr_off() {
-    WRITE(SPINDLE_LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_STATE);        // Turn spindle off
+    WRITE(SPINDLE_LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_STATE);        // Turn spindle on
     analogWrite(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_PWM_OFF); // Only write low byte
   }
+  void SpindleLaser::ocr_enable() {
+    ocr_enabled = true;
+  }
+  void SpindleLaser::ocr_disable() {
+    ocr_enabled = false;
+    digitalWrite(SPINDLE_LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_STATE);
+  }
+  
 #endif
 
 //

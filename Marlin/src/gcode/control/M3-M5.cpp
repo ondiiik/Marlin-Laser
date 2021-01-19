@@ -118,6 +118,14 @@ void GcodeSuite::M3_M4(const bool is_M4) {
  * M5 - Cutter OFF (when moves are complete)
  */
 void GcodeSuite::M5() {
+  #if HAS_CUTTER
+  if (parser.seenval('S') && (parser.value_int() < 0)) {
+    cutter.ocr_disable();
+  } else {
+    cutter.ocr_enable();
+  }
+  #endif
+  
   #if ENABLED(LASER_POWER_INLINE)
     if (parser.seen('I') == DISABLED(LASER_POWER_INLINE_INVERT)) {
       cutter.set_inline_enabled(false); // Laser power in inline mode
@@ -126,6 +134,7 @@ void GcodeSuite::M5() {
     // Non-inline, standard case
     cutter.inline_disable(); // Prevent future blocks re-setting the power
   #endif
+
   planner.synchronize();
   cutter.set_enabled(false);
   cutter.menuPower = cutter.unitPower;

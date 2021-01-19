@@ -1511,7 +1511,7 @@ void MarlinUI::update() {
     set_status_P(print_paused);
 
     #if ENABLED(LASER_FEATURE)
-      queue.inject_P(PSTR("M05 S0"));
+      queue.inject_P(PSTR("M05 S-1"));
     #endif
     #if ENABLED(PARK_HEAD_ON_PAUSE)
       TERN_(HAS_WIRED_LCD, lcd_pause_show_message(PAUSE_MESSAGE_PARKING, PAUSE_MODE_PAUSE_PRINT)); // Show message immediately to let user know about pause in progress
@@ -1526,7 +1526,9 @@ void MarlinUI::update() {
   void MarlinUI::resume_print() {
     reset_status();
     TERN_(PARK_HEAD_ON_PAUSE, wait_for_heatup = wait_for_user = false);
-    if (IS_SD_PAUSED()) queue.inject_P(M24_STR);
+    if (IS_SD_PAUSED()) {
+        queue.inject_P(M24_STR);
+    }
     #ifdef ACTION_ON_RESUME
       host_action_resume();
     #endif

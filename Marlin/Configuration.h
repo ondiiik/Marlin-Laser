@@ -21,6 +21,15 @@
  */
 #pragma once
 
+
+
+/*
+ * Currently I have two different machines for testing
+ */
+//#define USE_SMALL_RAMPS_TEST_MACHINE
+
+
+
 /**
  * Configuration.h
  *
@@ -127,7 +136,11 @@
 
 // Choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
+  #if ENABLED(USE_SMALL_RAMPS_TEST_MACHINE)
   #define MOTHERBOARD BOARD_RAMPS_14_EFB
+  #else
+  #define MOTHERBOARD BOARD_MKS_GEN_L_V21
+  #endif
   #define RAMPS_SWAP_YZ    1
   #define Z_STEP_PIN      -1
   #define Z_MIN_PIN       -1
@@ -137,7 +150,8 @@
 #endif
 
 // Name displayed in the LCD "Ready" message and Info menu
-#define CUSTOM_MACHINE_NAME "Laser Engraver"
+//#define CUSTOM_MACHINE_NAME "Laser Engraver"
+#define CUSTOM_MACHINE_NAME _UxGT("Laserová vypalovačka")
 
 // Printer's unique ID, used by some programs to differentiate between machines.
 // Choose your own or use a service like https://www.uuidgenerator.net/version4

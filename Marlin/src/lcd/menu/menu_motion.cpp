@@ -232,7 +232,9 @@ void menu_move() {
         ACTION_ITEM(MSG_FREE_XY, []{ line_to_z(delta_clip_start_height); ui.synchronize(); });
     #endif
 
+    #if PIN_EXISTS(Z_STEP_PIN)
     SUBMENU(MSG_MOVE_Z, []{ _menu_move_distance(Z_AXIS, lcd_move_z); });
+    #endif
   }
   else
     GCODES_ITEM(MSG_AUTO_HOME, G28_STR);
@@ -326,7 +328,9 @@ void menu_motion() {
   #if ENABLED(INDIVIDUAL_AXIS_HOMING_MENU)
     GCODES_ITEM(MSG_AUTO_HOME_X, PSTR("G28X"));
     GCODES_ITEM(MSG_AUTO_HOME_Y, PSTR("G28Y"));
+    #if PIN_EXISTS(Z_STEP_PIN)
     GCODES_ITEM(MSG_AUTO_HOME_Z, PSTR("G28Z"));
+    #endif
   #endif
 
   //
