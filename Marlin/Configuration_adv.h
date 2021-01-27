@@ -560,7 +560,9 @@
   #endif
 #endif
 
-//#define Y_DUAL_STEPPER_DRIVERS
+#if DISABLED(USE_SMALL_RAMPS_TEST_MACHINE)
+#define Y_DUAL_STEPPER_DRIVERS
+#endif
 #if ENABLED(Y_DUAL_STEPPER_DRIVERS)
   #define INVERT_Y2_VS_Y_DIR true   // Set 'true' if Y motors should rotate in opposite directions
   //#define Y_DUAL_ENDSTOPS
