@@ -84,6 +84,7 @@ public:
   static const cutter_power_t mpower_min() { return cpwr_to_upwr(SPEED_POWER_MIN); }
   static const cutter_power_t mpower_max() { return cpwr_to_upwr(SPEED_POWER_MAX); }
 
+  static bool locate;                     // Locate print area is in progress
   static bool isReady;                    // Ready to apply power setting from the UI to OCR
   static int16_t power;
 

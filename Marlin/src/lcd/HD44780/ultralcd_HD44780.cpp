@@ -582,14 +582,18 @@ FORCE_INLINE void _draw_heater_status(const heater_id_t heater_id, const char pr
 FORCE_INLINE void _draw_laser_status() {
   lcd_put_wchar('[');
   
-  int l = (int(cutter.menuPower) * 9 * 4) / 255;
+  if (cutter.locate) {
+    lcd_put_u8str_P(PSTR("LOCATE..."));
+  } else {
+    int l = (int(cutter.menuPower) * 9 * 4) / 255;
   
-  for (int i = 0; i < 9 * 4; i += 4) {
-    int p = max(min(l - i - 1, 2), -1);
-    if ((p < 0) || (!cutter.isReady)) {
-      lcd_put_wchar(' ');
-    } else {
-      lcd_put_wchar(LCD_STR_PROGRESS[p]);
+    for (int i = 0; i < 9 * 4; i += 4) {
+      int p = max(min(l - i - 1, 2), -1);
+      if ((p < 0) || (!cutter.isReady)) {
+        lcd_put_wchar(' ');
+      } else {
+        lcd_put_wchar(LCD_STR_PROGRESS[p]);
+      }
     }
   }
   

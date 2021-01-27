@@ -498,6 +498,10 @@ private:
 
   static void G92();
 
+  #if ENABLED(LASER_FEATURE) && HAS_LCD_MENU
+    static void G93();
+  #endif
+
   TERN_(CALIBRATION_GCODE, static void G425());
 
   TERN_(HAS_RESUME_CONTINUE, static void M0_M1());

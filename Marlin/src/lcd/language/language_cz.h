@@ -661,4 +661,8 @@ namespace Language_cz {
   PROGMEM Language_Str MSG_BACKLASH_C                      = LCD_STR_C;
   PROGMEM Language_Str MSG_BACKLASH_CORRECTION             = _UxGT("Korekce");
   PROGMEM Language_Str MSG_BACKLASH_SMOOTHING              = _UxGT("Vyhlazení");
+  
+  PROGMEM Language_Str MSG_LOCATE_X                        = _UxGT("Lokalizace X");
+  PROGMEM Language_Str MSG_LOCATE_Y                        = _UxGT("Lokalizace Y");
+  PROGMEM Language_Str MSG_LOCATE_CONFIRM                  = _UxGT("Pokračovat");
 }

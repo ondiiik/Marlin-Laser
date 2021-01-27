@@ -61,6 +61,7 @@
 void menu_tune();
 void menu_cancelobject();
 void menu_motion();
+void menu_locate();
 void menu_temperature();
 void menu_configuration();
 

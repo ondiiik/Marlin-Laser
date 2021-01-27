@@ -370,6 +370,10 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
 
       case 92: G92(); break;                                      // G92: Set current axis position(s)
 
+      #if ENABLED(LASER_FEATURE) && HAS_LCD_MENU
+      case 93: G93(); break;                                      // G93: Locate area
+      #endif
+
       #if HAS_MESH
         case 42: G42(); break;                                    // G42: Coordinated move to a mesh point
       #endif

@@ -46,6 +46,9 @@
   #include "../../feature/bedlevel/bedlevel.h"
 #endif
 
+#include "../../feature/spindle_laser.h"
+
+
 #if ENABLED(MANUAL_E_MOVES_RELATIVE)
   float manual_move_e_origin = 0;
 #endif
@@ -397,6 +400,19 @@ void menu_motion() {
   //
   GCODES_ITEM(MSG_DISABLE_STEPPERS, PSTR("M84"));
 
+  END_MENU();
+}
+
+static void _menu_locate_confirm() {
+  cutter.locate = false;
+  ui.return_to_status();
+}
+
+void menu_locate() {
+  START_MENU();
+  SUBMENU(    MSG_LOCATE_X, []{ _menu_move_distance(X_AXIS, lcd_move_x); });  
+  SUBMENU(    MSG_LOCATE_Y, []{ _menu_move_distance(Y_AXIS, lcd_move_y); });  
+  ACTION_ITEM(MSG_LOCATE_CONFIRM, _menu_locate_confirm);
   END_MENU();
 }
 
