@@ -105,6 +105,79 @@ void lcd_move_x() { _lcd_move_xyz(GET_TEXT(MSG_MOVE_X), X_AXIS); }
 void lcd_move_y() { _lcd_move_xyz(GET_TEXT(MSG_MOVE_Y), Y_AXIS); }
 void lcd_move_z() { _lcd_move_xyz(GET_TEXT(MSG_MOVE_Z), Z_AXIS); }
 
+
+//
+// "Locate" submenu
+//
+static void _lcd_locate_xy(PGM_P const    name,
+                           const AxisEnum axis)
+{
+    if (ui.use_click())
+    {
+        return ui.goto_previous_screen_no_defer();
+    }
+    
+    if (ui.encoderPosition && !ui.manual_move.processing)
+    {
+        float min;
+        float max;
+        soft_endstop.get_manual_axis_limits(axis, min, max);
+        
+        
+#if ENABLED(DELTA)
+        if (axis != Z_AXIS) {
+            max = SQRT(sq((float)(DELTA_PRINTABLE_RADIUS)) - sq(current_position[Y_AXIS - axis])); // (Y_AXIS - axis) == the other axis
+            min = -max;
+        }
+#endif
+        
+        
+        const float diff = float(int32_t(ui.encoderPosition)) * ui.manual_move.menu_scale;
+        max =  max - min;
+        min = -max;
+        
+#if IS_KINEMATIC
+        ui.manual_move.offset += diff;
+        
+        if (int32_t(ui.encoderPosition) < 0)
+        {
+            NOLESS(ui.manual_move.offset, min - current_position[axis]);
+        }
+        else
+        {
+            NOMORE(ui.manual_move.offset, max - current_position[axis]);
+        }
+#else
+        position_shift[axis] += diff;
+        
+        if (int32_t(ui.encoderPosition) < 0)
+        {
+            NOLESS(position_shift[axis], min);
+        }
+        else
+        {
+            NOMORE(position_shift[axis], max);
+        }
+#endif
+        update_workspace_offset(axis);
+        ui.refresh(LCDVIEW_REDRAW_NOW);
+    }
+    
+    ui.encoderPosition = 0;
+    
+    if (ui.should_draw())
+    {
+        const float pos = NATIVE_TO_LOGICAL(
+          ui.manual_move.processing ? destination[axis] : current_position[axis] + TERN0(IS_KINEMATIC, ui.manual_move.offset),
+          axis
+        );
+        
+        MenuEditItemBase::draw_edit_screen(name, ui.manual_move.menu_scale >= 0.1f ? ftostr41sign(pos) : ftostr63(pos));
+    }
+}
+void lcd_locate_x() { _lcd_locate_xy(GET_TEXT(MSG_LOCATE_X), X_AXIS); }
+void lcd_locate_y() { _lcd_locate_xy(GET_TEXT(MSG_LOCATE_Y), Y_AXIS); }
+
 #if E_MANUAL
 
   static void lcd_move_e(TERN_(MULTI_MANUAL, const int8_t eindex=-1)) {
@@ -410,8 +483,8 @@ static void _menu_locate_confirm() {
 
 void menu_locate() {
   START_MENU();
-  SUBMENU(    MSG_LOCATE_X, []{ _menu_move_distance(X_AXIS, lcd_move_x); });  
-  SUBMENU(    MSG_LOCATE_Y, []{ _menu_move_distance(Y_AXIS, lcd_move_y); });  
+  SUBMENU(    MSG_LOCATE_X, []{   _menu_move_distance(X_AXIS, lcd_locate_x); });  
+  SUBMENU(    MSG_LOCATE_Y, []{   _menu_move_distance(Y_AXIS, lcd_locate_y); });  
   ACTION_ITEM(MSG_LOCATE_CONFIRM, _menu_locate_confirm);
   END_MENU();
 }

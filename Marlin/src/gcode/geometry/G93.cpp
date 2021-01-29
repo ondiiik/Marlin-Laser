@@ -25,6 +25,9 @@
 #if ENABLED(LASER_FEATURE) && HAS_LCD_MENU
 
 
+#define LOCATE_SLICE_SIZE 10.0
+
+
 #include "../../feature/spindle_laser.h"
 #include "../../module/endstops.h"
 #include "../../module/stepper.h"
@@ -32,6 +35,171 @@
 
 
 extern void menu_locate();
+
+
+namespace
+{
+    class _Args
+    {
+    public:
+        _Args()
+            :
+            origin       {               },
+            size         {               },
+            feedrate     { feedrate_mm_s },
+            feedrate_old { feedrate_mm_s },
+            laser_power  { 2.0           }
+        {
+            const char cidx[] {'X', 'Y', 'I', 'J'};
+            float      vals[COUNT(cidx)];
+            
+            for (auto& c : cidx)
+            {
+                if (!parser.seenval(c))
+                {
+                    kill();
+                }
+                
+                vals[&c - cidx] = parser.value_linear_units();
+            }
+            
+            origin.x = vals[0];
+            origin.y = vals[1];
+            size.x   = vals[2];
+            size.y   = vals[3];
+            
+            float spwr = 2;
+            
+            if (parser.seen('S'))
+            {
+                spwr = parser.value_float();
+            }
+            
+            laser_power = TERN(SPINDLE_LASER_PWM, cutter.power_to_range(cutter_power_t(round(spwr))), spwr > 0 ? 255 : 0);
+            
+            if (parser.linearval('F') > 0)
+            {
+                feedrate_mm_s = parser.value_feedrate();
+            }
+        }
+        
+        xy_pos_t   origin;
+        xy_pos_t   size;
+        feedRate_t feedrate;
+        feedRate_t feedrate_old;
+        int16_t    laser_power;
+    };
+    
+    
+    class _FrameCoro
+    {
+    public:
+        _FrameCoro(const _Args& aArgs)
+            :
+            _args  { aArgs                     },
+            _state { 0                         },
+            _end   { aArgs.origin + aArgs.size }
+        {
+            
+        }
+        
+        
+        void operator()()
+        {
+            _next_loop();
+            prepare_line_to_destination();
+        }
+        
+        
+    private:
+        void _next_loop()
+        {
+            switch (_state)
+            {
+                // Go to origin
+                case 0:
+                    destination       = _args.origin;
+                    feedrate_mm_s     = _args.feedrate;
+                    cutter.inline_power(_args.laser_power);
+                    SERIAL_ECHO_MSG("CORO ", "START");
+                    ++_state;
+                    break;
+                
+                // Move forward in direction X
+                case 1:
+                {
+                    float d { min(_end.x - current_position.x, LOCATE_SLICE_SIZE) };
+                    destination.x += d;
+                    SERIAL_ECHO_MSG("CORO ", "R");
+                    
+                    if (d < LOCATE_SLICE_SIZE)
+                    {
+                        planner.synchronize();
+                        ++_state;
+                    }
+                    
+                    break;
+                }
+                
+                // Move upward in direction Y
+                case 2:
+                {
+                    float d { min(_end.y - current_position.y, LOCATE_SLICE_SIZE) };
+                    destination.y += d;
+                    SERIAL_ECHO_MSG("CORO ", "U");
+                    
+                    if (d < LOCATE_SLICE_SIZE)
+                    {
+                        planner.synchronize();
+                        ++_state;
+                    }
+                    
+                    break;
+                }
+                
+                // Move backward in direction X
+                case 3:
+                {
+                    float d { min(current_position.x - _args.origin.x, LOCATE_SLICE_SIZE) };
+                    destination.x -= d;
+                    SERIAL_ECHO_MSG("CORO ", "L");
+                    
+                    if (d < LOCATE_SLICE_SIZE)
+                    {
+                        planner.synchronize();
+                        ++_state;
+                    }
+                    
+                    break;
+                }
+                
+                // Move downward in direction Y
+                case 4:
+                {
+                    float d { min(current_position.y - _args.origin.y, LOCATE_SLICE_SIZE) };
+                    destination.y -= d;
+                    SERIAL_ECHO_MSG("CORO ", "L");
+                    
+                    if (d < LOCATE_SLICE_SIZE)
+                    {
+                        planner.synchronize();
+                        _state = 1;
+                    }
+                    
+                    break;
+                }
+                
+                // We shall not appear here 
+                default:
+                    kill();
+            }
+        }
+        
+        const _Args& _args;
+        uint8_t      _state;
+        xy_pos_t     _end;
+    };
+}
 
 
 /**
@@ -44,17 +212,33 @@ void GcodeSuite::G93()
      */
     planner.synchronize();
     cutter.locate = true;
+    ui.defer_status_screen(true);
     ui.goto_screen(menu_locate);
+    
+    
+    /*
+     * Get range where to move and create mover coroutine
+     */
+    _Args      args {      };
+    _FrameCoro coro { args };
     
     /*
      * We will move around bounding box till locate mode is exited by user
      */
     while (cutter.locate)
     {
+        coro();
         idle();
         endstops.event_handler();
         TERN_(HAS_TFT_LVGL_UI, printer_state_polling());
     }
+    
+    /*
+     * Switch off laser and revert feedrate
+     */
+    cutter.inline_power(0);
+    feedrate_mm_s = args.feedrate_old;
+    ui.defer_status_screen(false);
 }
 
 #endif
