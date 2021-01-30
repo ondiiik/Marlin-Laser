@@ -137,16 +137,18 @@ static void _lcd_locate_xy(PGM_P const    name,
         min = -max;
         
 #if IS_KINEMATIC
-        ui.manual_move.offset += diff;
-        
-        if (int32_t(ui.encoderPosition) < 0)
-        {
-            NOLESS(ui.manual_move.offset, min - current_position[axis]);
-        }
-        else
-        {
-            NOMORE(ui.manual_move.offset, max - current_position[axis]);
-        }
+        // Not supported yet
+        kill();
+//        ui.manual_move.offset += diff;
+//        
+//        if (int32_t(ui.encoderPosition) < 0)
+//        {
+//            NOLESS(ui.manual_move.offset, min - workspace_offset[axis]);
+//        }
+//        else
+//        {
+//            NOMORE(ui.manual_move.offset, max - workspace_offset[axis]);
+//        }
 #else
         position_shift[axis] += diff;
         
@@ -159,7 +161,6 @@ static void _lcd_locate_xy(PGM_P const    name,
             NOMORE(position_shift[axis], max);
         }
 #endif
-        update_workspace_offset(axis);
         ui.refresh(LCDVIEW_REDRAW_NOW);
     }
     
@@ -167,12 +168,10 @@ static void _lcd_locate_xy(PGM_P const    name,
     
     if (ui.should_draw())
     {
-        const float pos = NATIVE_TO_LOGICAL(
-          ui.manual_move.processing ? destination[axis] : current_position[axis] + TERN0(IS_KINEMATIC, ui.manual_move.offset),
-          axis
-        );
-        
-        MenuEditItemBase::draw_edit_screen(name, ui.manual_move.menu_scale >= 0.1f ? ftostr41sign(pos) : ftostr63(pos));
+        MenuEditItemBase::draw_edit_screen(name,
+                                           ui.manual_move.menu_scale >= 0.1f    ?
+                                           ftostr41sign(-position_shift[axis]) :
+                                           ftostr63(    -position_shift[axis]));
     }
 }
 void lcd_locate_x() { _lcd_locate_xy(GET_TEXT(MSG_LOCATE_X), X_AXIS); }

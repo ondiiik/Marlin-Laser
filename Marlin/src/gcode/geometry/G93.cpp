@@ -25,7 +25,9 @@
 #if ENABLED(LASER_FEATURE) && HAS_LCD_MENU
 
 
+#if !defined(LOCATE_SLICE_SIZE)
 #define LOCATE_SLICE_SIZE 10.0
+#endif
 
 
 #include "../../feature/spindle_laser.h"
@@ -48,7 +50,7 @@ namespace
             size         {               },
             feedrate     { feedrate_mm_s },
             feedrate_old { feedrate_mm_s },
-            laser_power  { 2.0           }
+            laser_power  { 2             }
         {
             const char cidx[] {'X', 'Y', 'I', 'J'};
             float      vals[COUNT(cidx)];
@@ -77,9 +79,11 @@ namespace
             
             laser_power = TERN(SPINDLE_LASER_PWM, cutter.power_to_range(cutter_power_t(round(spwr))), spwr > 0 ? 255 : 0);
             
+            SERIAL_ECHO_MSG("F", parser.linearval('F'));
             if (parser.linearval('F') > 0)
             {
-                feedrate_mm_s = parser.value_feedrate();
+                feedrate = parser.value_feedrate();
+                SERIAL_ECHO_MSG("GOT", feedrate);
             }
         }
         
@@ -107,6 +111,7 @@ namespace
         void operator()()
         {
             _next_loop();
+            destination = _dest - position_shift;
             prepare_line_to_destination();
         }
         
@@ -118,19 +123,17 @@ namespace
             {
                 // Go to origin
                 case 0:
-                    destination       = _args.origin;
+                    _dest             = _args.origin;
                     feedrate_mm_s     = _args.feedrate;
                     cutter.inline_power(_args.laser_power);
-                    SERIAL_ECHO_MSG("CORO ", "START");
                     ++_state;
                     break;
                 
                 // Move forward in direction X
                 case 1:
                 {
-                    float d { min(_end.x - current_position.x, LOCATE_SLICE_SIZE) };
-                    destination.x += d;
-                    SERIAL_ECHO_MSG("CORO ", "R");
+                    float d { min(_end.x - _dest.x, LOCATE_SLICE_SIZE) };
+                    _dest.x += d;
                     
                     if (d < LOCATE_SLICE_SIZE)
                     {
@@ -144,9 +147,8 @@ namespace
                 // Move upward in direction Y
                 case 2:
                 {
-                    float d { min(_end.y - current_position.y, LOCATE_SLICE_SIZE) };
-                    destination.y += d;
-                    SERIAL_ECHO_MSG("CORO ", "U");
+                    float d { min(_end.y - _dest.y, LOCATE_SLICE_SIZE) };
+                    _dest.y += d;
                     
                     if (d < LOCATE_SLICE_SIZE)
                     {
@@ -160,9 +162,8 @@ namespace
                 // Move backward in direction X
                 case 3:
                 {
-                    float d { min(current_position.x - _args.origin.x, LOCATE_SLICE_SIZE) };
-                    destination.x -= d;
-                    SERIAL_ECHO_MSG("CORO ", "L");
+                    float d { min(_dest.x - _args.origin.x, LOCATE_SLICE_SIZE) };
+                    _dest.x -= d;
                     
                     if (d < LOCATE_SLICE_SIZE)
                     {
@@ -176,9 +177,8 @@ namespace
                 // Move downward in direction Y
                 case 4:
                 {
-                    float d { min(current_position.y - _args.origin.y, LOCATE_SLICE_SIZE) };
-                    destination.y -= d;
-                    SERIAL_ECHO_MSG("CORO ", "L");
+                    float d { min(_dest.y - _args.origin.y, LOCATE_SLICE_SIZE) };
+                    _dest.y -= d;
                     
                     if (d < LOCATE_SLICE_SIZE)
                     {
@@ -198,6 +198,7 @@ namespace
         const _Args& _args;
         uint8_t      _state;
         xy_pos_t     _end;
+        xy_pos_t     _dest;
     };
 }
 
@@ -236,6 +237,9 @@ void GcodeSuite::G93()
     /*
      * Switch off laser and revert feedrate
      */
+    update_workspace_offset(X_AXIS);
+    update_workspace_offset(Y_AXIS);
+    
     cutter.inline_power(0);
     feedrate_mm_s = args.feedrate_old;
     ui.defer_status_screen(false);

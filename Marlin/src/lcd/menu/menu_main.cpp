@@ -39,6 +39,10 @@
   #include "game/game.h"
 #endif
 
+#if ENABLED(LASER_FEATURE) && HAS_LCD_MENU
+  #include "../../feature/spindle_laser.h"
+#endif
+
 #if EITHER(SDSUPPORT, HOST_PROMPT_SUPPORT) || defined(ACTION_ON_CANCEL)
   #define MACHINE_CAN_STOP 1
 #endif
@@ -121,6 +125,13 @@ void menu_main() {
       });
     #endif
 
+    #if ENABLED(LASER_FEATURE) && HAS_LCD_MENU
+    if (cutter.locate)
+    {
+      SUBMENU(MSG_LOCATE, menu_locate);
+    }
+    #endif
+
     SUBMENU(MSG_TUNE, menu_tune);
 
     #if ENABLED(CANCEL_OBJECTS) && DISABLED(SLIM_LCD_MENUS)
@@ -169,6 +180,14 @@ void menu_main() {
       ACTION_ITEM(MSG_HOST_START_PRINT, host_action_start);
     #endif
 
+
+    #if ENABLED(LASER_FEATURE) && HAS_LCD_MENU
+    if (cutter.locate)
+    {
+      SUBMENU(MSG_LOCATE, menu_locate);
+    }
+    #endif
+    
     SUBMENU(MSG_MOTION, menu_motion);
   }
 
