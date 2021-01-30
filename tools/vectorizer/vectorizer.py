@@ -3,7 +3,7 @@ Created on Nov 29, 2020
 
 @author: OSi
 '''
-from svgwrite import Drawing, rgb
+#from svgwrite import Drawing, rgb
 from PIL import Image
 
 
@@ -94,40 +94,40 @@ class Vectorize:
 
 
 
-class SvgImage(Drawing):
-    def __init__(self, file, vectorized):
-        print('\tCreating SVG graphics ...')
-        super().__init__(file,
-                         size    = vectorized.size[1],
-                         profile = 'tiny',
-                         debug   = True)
-        
-        self.size  = vectorized.size[1]
-        
-        print('\t\tWriting path ...')
-        
-        for i in range(len(vectorized.moves) - 1):
-            self.add(self.path('M {} {} L {} {}'.format(*vectorized.moves[i][0],
-                                                        *vectorized.moves[i + 1][0]),
-                               stroke = '#000000',
-                               stroke_opacity = 1 - vectorized.moves[i + 1][2] / 255))
-
-
-
 class GCode:
-    def __init__(self, file, vectorized, speed):
+    def __init__(self, file, vectorized, speed, marker_cycles, min, max, init_comment = '; Built by vectorizer.py'):
         print('\tCreating G-CODE graphics ...')
         print('\t\tBurn speed {} mm/min'.format(speed))
-        self.file       = file
-        self.vectorized = vectorized
-        self.initial    = ['M05 S0   ; Power laser off',
-                           'G90      ; Set absolute positioning',
-                           'G28      ; Homing' ,
-                           'G21      ; Set millimeters']
-        self.final      = ['M05 I S0 ; Power laser off',
-                           'G0 X0 Y0 ; Park head and invoke laser off']
-        self.burn_speed = speed
-        self.size_y     = vectorized.size[0][1]
+        self.file          = file
+        self.vectorized    = vectorized
+        self.initial       = [init_comment,
+                              'M05  S0        ; Power laser off',
+                              'M300 S440 P150 ; Notify start',
+                              'M300 S880 P150',
+                              'M300 S440 P150',
+                              'M300 S880 P150',
+                              'G90            ; Set absolute positioning',
+                              'G28            ; Homing' ,
+                              'G21            ; Set millimeters',
+                              'M400']
+        self.final         = ['G1  X0 Y0 S0   ; Home laser head',
+                              'M84            ; Disable motors',
+                              'M400           ; Wait till moves are finished',
+                              'M05 S0         ; Power off laser',
+                              'M300 S660 P150 ; Notify end of job',
+                              'M300 S1320 P150',
+                              'M300 S660 P150',
+                              'M300 S1320 P150',
+                              'M300 S660 P150',
+                              'M300 S1320 P150',
+                              'M300 S660 P150',
+                              'M300 S1320 P150']
+        self.burn_speed    = speed
+        self.marker_cycles = marker_cycles
+        self.min           = min
+        self.rng           = max - min
+        self.size_x        = vectorized.size[0][0]
+        self.size_y        = vectorized.size[0][1]
     
     
     def save(self):
@@ -138,10 +138,25 @@ class GCode:
                 f.write('{}\n'.format(i))
             
             
+            f.write('G93 X0 Y0 I{} J{} F20000 ; Locate burning area\n'.format(self.size_x, self.size_y))
+            
+            f.write('\nG1 X0 Y0 S0 F3000 ; Move to origin\n')
+            f.write('M300 S660 P150      ; Start burning\n')
+            f.write('M300 S1320 P150\n')
+            f.write('M300 S660 P150\n')
+            f.write('M300 S1320 P150\n')
+            for i in range(7):
+                f.write('M300 S660 P150\n')
+                f.write('M300 S1320 P150\n')
+                f.write('M300 S660 P150\n')
+                f.write('M300 S1320 P150\n')
+            f.write('M400\n')
+            
+            
             f.write('\n\n; Engraving code\n')
             
             f.write('G1 X{:.3f} Y{:.3f} F3000 S0 ; Move to origin\n'.format(*self._convert(self.vectorized.moves[0])[0]))
-            f.write('G1 F{}                   ; Set burn speed\n\n'.format(self.burn_speed))
+            f.write('G1 F{}                     ; Set burn speed\n\n'.format(self.burn_speed))
             
             last = self._convert(self.vectorized.moves[0])
             
@@ -162,10 +177,7 @@ class GCode:
                 if not 0 == delta[0][1]:
                     f.write(' Y{:.3f}'.format(current[0][1]))
                 
-                if not 0 == delta[1]:
-                    f.write(' S{}'.format(current[1]))
-                
-                f.write('\n')
+                f.write(' S{}\n'.format(current[1]))
                 last = current
             
             
@@ -176,7 +188,12 @@ class GCode:
     
     
     def _convert(self, s):
-        return (s[1][0], self.size_y - s[1][1]), 255 - s[2] 
+        intensity = 255 - s[2]
+        
+        if not 0 == intensity:
+            intensity = (intensity * self.rng) // 255 + self.min
+        
+        return (s[1][0], self.size_y - s[1][1]), intensity 
 
 
 
@@ -187,26 +204,36 @@ if __name__ == '__main__':
     @click.option('--input',  '-i', type    = click.Path(exists = True), required = True, help = 'Input bitmap to be vectorized')
     @click.option('--output', '-o', type    = click.Path(),              required = True, help = 'Output G-CODE image')
     @click.option('--png',    '-p', type    = click.Path(),              default  = None, help = 'Output final PNG image')
-    @click.option('--svg',    '-v', type    = click.Path(),              default  = None, help = 'Output vectorized SVG image')
     @click.option('--width',  '-w',                                      default  = 100,  help = 'Final image width in mm')
     @click.option('--height', '-h',                                      default  = 100,  help = 'Final image height in mm')
     @click.option('--dot',    '-d', type    = float,                     default  = 0.1,  help = 'Laser path width')
-    @click.option('--speed',  '-s', type    = int,                       default  = 700,  help = 'Laser burn speed')
+    @click.option('--speed',  '-s', type    = int,                       default  = 1000, help = 'Laser burn speed')
+    @click.option('--count',  '-c', type    = int,                       default  = 16,   help = 'Count of low power marker cycles')
+    @click.option('--min',    '-m', type    = int,                       default  = 80,   help = 'Minimal non-zero intensity')
+    @click.option('--max',    '-x', type    = int,                       default  = 255,  help = 'Maximal intensity')
     @click.option('--bits',   '-t',                                      default  = 8,    help = 'Bit resolution of image')
     @click.option('--bw',     '-l', is_flag = True,                                       help = 'Rather use BW instead of grayscale')
-    def run(input, output, png, svg, width, height, dot, speed, bits, bw):
+    def run(input, output, png, width, height, dot, speed, count, min, max, bits, bw):
         print('Vectorizing ', input)
         vectorized = Vectorize(input, (width, height), dot, bits, bw, png)
         
         print('Writing G-CODE to ', output)
-        gcode = GCode(output, vectorized, speed)
+        gcode = GCode(output, vectorized, speed, count, min, max,
+'''; Parameters:
+;    vectorizer.input  = {}
+;    vectorizer.output = {}
+;    vectorizer.png    = {}
+;    vectorizer.width  = {}
+;    vectorizer.height = {}
+;    vectorizer.dot    = {}
+;    vectorizer.speed  = {}
+;    vectorizer.count  = {}
+;    vectorizer.min    = {}
+;    vectorizer.max    = {}
+;    vectorizer.bits   = {}
+;    vectorizer.bw     = {}
+'''.format(input, output, png, width, height, dot, speed, count, min, max, bits, bw))
         gcode.save()
-        
-        if svg:
-            print('Writing SVG graphics to ', svg)
-            svg = SvgImage(svg, vectorized)
-            svg.save()
-        
         print('Done ...')
     
     

@@ -50,7 +50,7 @@ namespace
             size         {               },
             feedrate     { feedrate_mm_s },
             feedrate_old { feedrate_mm_s },
-            laser_power  { 2             }
+            laser_power  {               }
         {
             const char cidx[] {'X', 'Y', 'I', 'J'};
             float      vals[COUNT(cidx)];
@@ -79,11 +79,9 @@ namespace
             
             laser_power = TERN(SPINDLE_LASER_PWM, cutter.power_to_range(cutter_power_t(round(spwr))), spwr > 0 ? 255 : 0);
             
-            SERIAL_ECHO_MSG("F", parser.linearval('F'));
             if (parser.linearval('F') > 0)
             {
                 feedrate = parser.value_feedrate();
-                SERIAL_ECHO_MSG("GOT", feedrate);
             }
         }
         
