@@ -150,7 +150,7 @@ static void _lcd_locate_xy(PGM_P const    name,
 //            NOMORE(ui.manual_move.offset, max - workspace_offset[axis]);
 //        }
 #else
-        position_shift[axis] += diff;
+        position_shift[axis] -= diff;
         
         if (int32_t(ui.encoderPosition) < 0)
         {

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 Created on Nov 29, 2020
 
@@ -137,8 +138,12 @@ class GCode:
             for i in self.initial:
                 f.write('{}\n'.format(i))
             
-            
-            f.write('G93 X0 Y0 I{} J{} F20000 ; Locate burning area\n'.format(self.size_x, self.size_y))
+            f.write('M300 S660 P50\n')
+            f.write('M300 S330 P50\n')
+            f.write('G93 X{} Y{} I0 J0 F5000 S1 ; Focuss laser\n'.format(self.size_x // 2, self.size_y // 2))
+            f.write('M300 S660 P50\n')
+            f.write('M300 S330 P50\n')
+            f.write('G93 X0 Y0 I{:.3f} J{:.3f} F5000 S1 ; Locate burning area\n'.format(self.size_x, self.size_y))
             
             f.write('\nG1 X0 Y0 S0 F3000 ; Move to origin\n')
             f.write('M300 S660 P150      ; Start burning\n')

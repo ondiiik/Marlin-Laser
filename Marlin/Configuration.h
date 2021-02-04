@@ -643,8 +643,12 @@
 //#define USE_XMIN_PLUG
 #define USE_YMIN_PLUG
 //#define USE_ZMIN_PLUG
+#if ENABLED(USE_SMALL_RAMPS_TEST_MACHINE)
 #define USE_XMAX_PLUG
-//#define USE_YMAX_PLUG
+#else
+#define USE_XMIN_PLUG
+#define USE_YMAX_PLUG
+#endif
 //#define USE_ZMAX_PLUG
 
 // Enable pullup for all endstops to prevent a floating state
@@ -783,7 +787,7 @@
  * Override with M201
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_ACCELERATION      { 3000, 3000, 3000, 10000 }
+#define DEFAULT_MAX_ACCELERATION      { 500, 500, 500, 10000 }
 
 //#define LIMITED_MAX_ACCEL_EDITING     // Limit edit via M201 or LCD to DEFAULT_MAX_ACCELERATION * 2
 #if ENABLED(LIMITED_MAX_ACCEL_EDITING)
@@ -798,9 +802,9 @@
  *   M204 R    Retract Acceleration
  *   M204 T    Travel Acceleration
  */
-#define DEFAULT_ACCELERATION          3000    // X, Y, Z and E acceleration for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  3000    // E acceleration for retracts
-#define DEFAULT_TRAVEL_ACCELERATION   3000    // X, Y, Z acceleration for travel (non printing) moves
+#define DEFAULT_ACCELERATION          500    // X, Y, Z and E acceleration for printing moves
+#define DEFAULT_RETRACT_ACCELERATION  500    // E acceleration for retracts
+#define DEFAULT_TRAVEL_ACCELERATION   500    // X, Y, Z acceleration for travel (non printing) moves
 
 /**
  * Default Jerk limits (mm/s)
@@ -1108,7 +1112,11 @@
 // @section machine
 
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
+#if ENABLED(USE_SMALL_RAMPS_TEST_MACHINE)
 #define INVERT_X_DIR false
+#else
+#define INVERT_X_DIR true
+#endif
 #define INVERT_Y_DIR true
 #define INVERT_Z_DIR false
 
@@ -1137,15 +1145,24 @@
 
 // Direction of endstops when homing; 1=MAX, -1=MIN
 // :[-1,1]
+#if ENABLED(USE_SMALL_RAMPS_TEST_MACHINE)
 #define X_HOME_DIR  1
+#else
+#define X_HOME_DIR -1
+#endif
 #define Y_HOME_DIR -1
 #define Z_HOME_DIR  0
 
 // @section machine
 
 // The size of the print bed
+#if ENABLED(USE_SMALL_RAMPS_TEST_MACHINE)
 #define X_BED_SIZE 195
 #define Y_BED_SIZE 177
+#else
+#define X_BED_SIZE 597
+#define Y_BED_SIZE 483
+#endif
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
 #define X_MIN_POS 0
